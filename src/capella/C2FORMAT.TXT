@@ -1,0 +1,638 @@
+===================================
+Dateiformat capella 2.0 / 2.1 / 2.2
+===================================
+
+Inhalt
+
+1. Kurzerklaerung
+2. Elementarformate
+3. SCORE
+4. Hilfsformate (alphabetisch)
+5. Daten der Akkordinformationen
+6. Grafik- und Textobjekte
+7. Berechnung der chromatischen Tonhoehe in MIDI-Einheiten:
+8. Beispieldatei
+
+
+1. Kurzerklaerung
+----------------
+
+Die einzelnen Formate sind in einem selbsterklaerenden Pseudocode beschrieben.
+Dabei steht in den einzelnen Zeilen jeweils 
+
+· das Teilformat (an anderer Stelle erklaert)
+· evtl. ein Wiederholungsfaktor in eckigen Klammern
+· Beschreibung
+
+
+2. Elementarformate
+-------------------
+
+BIT   einzelne Bits. Treten immer in Achtergruppen (Byte) oder Sechzehner-
+      gruppen (Wort) auf. Diese Gruppen werden durch Diagramme dargestellt, 
+      wobei rechts das nidrigwertigste Bit steht.
+CHAR  1 Byte mit Vorzeichen
+BYTE  1 Byte ohne Vorzichen
+INT   2 Bytes mit Vorzeichen
+BOOL  wie INT
+UINT  2 Bytes ohne Vorzichen
+LONG  4 Bytes mit Vorzichen
+DWORD 4 Bytes ohne Vorzichen
+
+
+3. SCORE
+--------
+
+SCORE (capella 2.0/2.1/2.2 - Partitur)
+  LONG              Dateikennung; moegliche Werte:
+                      0x74B3E289 = V2.0, 
+                      0x74B3E28A = V2.1 (oder V2.2 ohne Taktnumerierung)
+                      0x74B3E28B = V2.2 (mit Taktnumerierung)
+  PRINTSETTINGS     Druckereinstellungen
+  UINT              Druckgroesse (7200 * Abstand zweier Notenlinien / Zoll)
+  BYTE              Druckbilddarstellung
+  BYTE              Farbdarstellung
+  FONT              Standard-Text-Font
+  if Dateikennung >= V2.1
+    INT             Anfang fuer Seitenzaehlung
+  endif
+  if Dateikennung = V2.2 (Taktnumerierung)
+    BYTE            umrahmte Taktnummern 
+    BYTE            Abstand der Taktnummern vom linken Rand
+    BYTE            Abstand der Taktnummern ueber dem System
+    FONT            Font fuer Taktnummern
+  endif
+  TEXTZEILE         Kopfzeile
+  TEXTZEILE         Fusszeile
+  LAYOUT            Partiturformat
+  INT               nSystems
+  SYSTEM[nSystems]  Beschreibung der Systeme
+  INT               nMetafiles
+  METAFILE[nMetafiles]
+end
+
+
+4. Hilfsformate (alphabetisch)
+------------------------------
+
+FONT (56 Bytes) 
+  UINT    nScale
+  LOGFONT logfont
+  INT     nHeight
+  UINT    reserviert
+end
+
+LAYOUT (Beschreibung der Partitur-Formatvorlage)
+  if Dateikennung >= V2.1
+    BYTE    topDist
+    CHAR    Ersatzzeichen fuer geschuetztes Leerzeichen ('\0' --> '$')
+    BYTE    interDist
+    CHAR    Ersatzzeichen fuer geschuetzten Bindestrich ('\0' --> '#')
+  else
+    INT     topDist
+    INT     interDist
+  endif
+  BYTE    beamMode
+  FONT    txtFont
+  BYTE    txtAlign
+  BOOL    allaBreve
+  UINT    tempo
+  INT     nStaves
+  if Dateikennung >= V2.1
+    BYTE[16] nSound  (Klang fuer Kanal 1 bis 16
+                      im 1. Byte ist hoechstes Bit gesetzt!)
+    BYTE[16] nVolume (Lautstaerke fuer Kanal 1 bis 16)
+  else (Version 2.0)
+    BYTE[9] nSound   (Klang fuer Kanal 1 bis 9)
+    BYTE[9] nVolume  (Lautstaerke fuer Kanal 1 bis 9)
+  endif
+  STAFF_LAYOUT[nStaves]
+end
+
+LIEDTEXT
+  INT         Liedtext_Laenge
+  if Liedtext_Laenge > 0
+    CHAR[n+1] Liedtext
+    FONT      (56 Bytes) Liedtext_Font
+    INT       Abstand_von_Notenzeile
+    INT       Abstand_zwischen_Strophen
+  endif
+end
+
+LOGFONT (Windows-Struktur!)
+  INT     lfHeight;
+  INT     lfWidth;
+  INT     lfEscapement;
+  INT     lfOrientation;
+  INT     lfWeight;
+  BYTE    lfItalic;
+  BYTE    lfUnderline;
+  BYTE    lfStrikeOut;
+  BYTE    lfCharSet;
+  BYTE    lfOutPrecision;
+  BYTE    lfClipPrecision;
+  BYTE    lfQuality;
+  BYTE    lfPitchAndFamily;
+  CHAR    lfFaceName[32];
+end
+
+METAFILE (importierte WMF-Grafik)
+  INT           Type
+  LONG[4]       left, top, right, bottom
+  LONG          xProp (Soll-Seitenverhaeltnis)
+  LONG          yProp
+  INT[4]        reserviert
+  BOOL          fMF (in capella 2.0 immer TRUE)
+  if fMF
+    METAFILEPICT mf
+    DWORD size
+    CHAR[size] Daten
+  endif
+end
+
+METAFILEPICT (Windows-Struktur!)
+  INT   mm
+  INT   xExt
+  INT   yExt
+  UINT  hMF
+end
+
+PRINTSETTINGS (Teil der Windows-Struktur DEVMODE)
+  DWORD dmFields;
+  INT   dmOrientation;
+  INT   dmPaperSize;
+  INT   dmPaperLength;
+  INT   dmPaperWidth;
+  INT   dmScale;
+  INT   dmCopies;
+  INT   dmDefaultSource;
+  INT   dmPrintQuality;
+  INT   dmColor;
+  INT   dmDuplex;
+  INT   dmYResolution;
+  INT   dmTTOption;
+  INT   oberer Seitenrand
+  INT   unterer Seitenrand
+  INT   linker Seitenrand
+  INT   rechter Seitenrand
+end
+
+STAFF (Notenzeile)
+  LIEDTEXT
+  BOOL        fActiveVoice
+  INT         Stimme  (0 = Einzelzeile, 1 = erste Stimme, 2 = zweite Stimme)
+  INT         zusaetzlicher Abstand nach oben (in Notenlinien)
+  INT         zusaetzlicher Abstand nach unten (in Notenlinien)
+  BYTE        Layout-Zeilennummer
+  UINT        lg
+  CHAR[lg]    Akkordinformationen (siehe Abschnitt 5)
+  INT         n (Anzahl Akkorde+1)
+  INT[n+1]    Akkordindizes (Indizes der Akkordbeschreibungen in den Daten.
+              Beispiel: Akkordindizes[2] = 17 bedeutet, dass die Beschreibung 
+              des 3. Akkords (Zaehlung ab 0) bei Byte 17 der Akkordinformationen
+              beginnt.
+              
+end
+
+STAFF_LAYOUT (Format einer Notenzeile)
+  INT     Abstand nach oben
+  INT     Abstand nach unten
+  BYTE    Schluessel
+  BOOL    fSingleLine
+  BOOL    irrelevant
+  INT     baseSound
+  INT     extSound
+  INT     transp
+  CHAR[3] brackets
+  STRINGZ Beschreibung
+  STRINGZ Bezeichnung
+  STRINGZ Abkuerzung
+end
+
+STRINGZ
+  INT len
+  CHAR[len+1] Text (Null-terminierter String)
+end
+
+SYSTEM (Notensystem)
+  +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+  |5                              |4                  |3  |2  |1  |
+  +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+  (1) BIT     fJustification
+  (2) BIT     fShowMeter
+  (3) BIT     fFullName
+  (4) BIT[5]  n1 (Korrektur der Taktzaehlung Teil 1, ab V2.2)
+  (5) BYTE    nIndent
+
+  +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+  |4  |3              |2  |1                                      |
+  +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+  (1) BIT[10] nStaves
+  (2) BIT     Taktnumerierung auf 1 zuruecksetzen (ab V2.2)
+  (3) BIT[4]  n2 (Korrektur der Taktzaehlung Teil 2, ab V2.2)
+              n = n1 + 32*n2
+              if n > 500 then Korrektur := 500-n else Korrektur := n
+  (4) BIT     fFormFeed (ab V2.2)
+
+  STAFF[nStaves] (Beschreibung der Notenzeilen)
+end
+
+TEXTZEILE (fuer Kopf-/Fusszeile)
+  INT             Laenge
+  if Laenge > 0
+    CHAR[Laenge+1] Zeile  (Null-terminierter String)
+    INT           Abstand
+    FONT          Font
+    BYTE          Ausrichtung
+    BYTE          auch auf 1. Seite
+  endif
+end
+
+
+5. Daten der Akkordinformationen
+--------------------------------
+
+  +---+---+---+---+---+---+---+---+
+  |5              |4  |3  |2  |1  |
+  +---+---+---+---+---+---+---+---+
+  (1) BIT      Extras
+  (2) BIT      fester_Taktstrich_oder_Verschiebung
+  (3) BIT      Moduswechsel
+  (4) BIT      Triole_etc
+  (5) BIT[4]   Anzahl_Noten
+
+  if Moduswechsel
+    +---+---+---+---+---+---+---+---+
+    |3      |2          |1          |
+    +---+---+---+---+---+---+---+---+
+    BIT[3] Schluesselform (0=G, 1=C, 2=F, 3=Schlagz. 4=kein, 5=unveraendert)
+    BIT[3] Schluessel-Linie (0 = oberste Linie, ... , 4 = unterste Linie)
+    BIT[2] Schluessel-Oktavierung (0=nach oben, 1=keine, 2= nach unten)
+
+    +---+---+---+---+---+---+---+---+
+    |2              |1              |
+    +---+---+---+---+---+---+---+---+
+    (1) BIT[4] Tonart (0=7b ... 7=c-Dur ... 14=7#, 15=unveraendert)
+    (2) BIT[4] Taktnenner (0=ganze, 1=halbe, ..., 6=1/64, 15=kein Takt)
+
+    BYTE   Taktzaehler  (255=unveraendert)
+  endif
+
+  if fester_Taktstrich_oder_Verschiebung
+    +---+---+---+---+---+---+---+---+
+    |2              |1              |
+    +---+---+---+---+---+---+---+---+
+    BIT[4] fester_Taktstrich (0..6=einfach, doppelt, Schluss Wdh-Ende, 
+                              Wdh.Anf., Wdh-Ende/Anf)
+    BIT[4] Horizontalverschiebung
+  endif
+
+  if Triole_etc (Beispiele: Triole / Duole)
+    +---+---+---+---+---+---+---+---+
+    |3          |2  |1              |
+    +---+---+---+---+---+---+---+---+
+    (1) BIT[4] Zaehler           ( 3  /  2 )
+    (2) BIT[1] tripartit        ( 0  /  1 )
+    (3) Bit[3] reserviert (=0)
+  endif
+
+  if Extras
+    BYTE[3] reserviert
+    BYTE    Anzahl_GrafikObjekte
+    GRAFIKOBJEKT[Anzahl_GrafikObjekte]
+  endif
+
+  +---+---+---+---+---+---+---+---+
+  |4  |3  |2      |1              |
+  +---+---+---+---+---+---+---+---+
+  (1) BIT[4] Notenwert
+  (2) BIT[2] Punktierung (0..3 = ohne, einfach doppelt, Zeilenende)
+  (3) BIT    halbe_Groesse
+  (4) BIT    ohne_Wert
+
+  +---+---+---+---+---+---+---+---+
+  |6          |5  |4  |3  |2  |1  |              |
+  +---+---+---+---+---+---+---+---+
+  (1) BIT    Balken trennen
+  (2) BIT    Balken verbinden
+  (3) BIT    unsichtbar
+  (4) BIT    Haltebogen
+  (5) BIT    expl_Vorzeichen
+  (6) BIT[3] Kopfform
+
+  +---+---+---+---+---+---+---+---+
+  |4  |3  |2      |1              |
+  +---+---+---+---+---+---+---+---+
+  (1) BIT[4] Artikulationszeichen
+  (2) BIT[2] Hals
+  (3) BIT[1] Pause auch in zweistimmiger Zeile zentriert (ab V2.1)
+  (4) BIT[1] Atemzeichen (neu in V2.2)
+
+  NOTE[Anzahl_Noten]
+end
+
+NOTE
+  +---+---+---+---+---+---+---+---+
+  |2      |1                      |
+  +---+---+---+---+---+---+---+---+
+  (1) BIT[6] relative diatonische Hoehe + 32
+  (2) BIT[2] Alteration + 2
+end
+
+GRAFIKOBJEKT
+  BYTE Typ
+  BYTE Laenge_des_Notenbereichs
+  case Typ
+    0: BINDEBOGEN     
+    1: N_OLENKLAMMER
+    2: DE_CRESCENDO   
+    3: NOTENLINIEN 
+    4: VOLTENKLAMMER
+    5: TRILLERSCHLANGE
+    6: TEXTOBJEKT
+    7: LINIE
+    8: RECHTECK
+    9: ELLIPSE
+  endcase
+end
+
+
+6. Grafik- und Textobjekte
+--------------------------
+
+BINDEBOGEN (16 Bytes)
+  INT x0 (Anfangspunkt der Bezier-Kurve)
+  INT y0
+  INT x1 (1. Stuetzpunkt der Bezier-Kurve)
+  INT y1
+  INT x2 (2. Stuetzpunkt der Bezier-Kurve)
+  INT y2
+  INT x3 (Endpunkt der Bezier-Kurve)
+  INT y3
+end
+
+DE_CRESCENDO (8 Bytes)
+  INT x0 (Winkelpunkt)
+  INT y0
+  INT x1 (oberer Endpunkt, anderer ergibt sich aus Symmetrie)
+  INT y1
+end
+
+ELLIPSE (10 Bytes) siehe RECHTECK
+
+LINIE (10 Bytes)
+  INT x0
+  INT y0
+  INT x1
+  INT y1
+
+  +---+---+---+---+---+---+---+---+
+  |2              |1              |
+  +---+---+---+---+---+---+---+---+
+  (1) BIT[4] Linienstaerke
+  (2) BIT[4] frei
+
+  BYTE   frei
+
+N_OLENKLAMMER (10 Bytes)
+  INT x0
+  INT y0
+  INT x1
+  INT y1
+
+  +---+---+---+---+---+---+---+---+
+  |3                      |2  |1  |
+  +---+---+---+---+---+---+---+---+
+  (1) BIT    untere Klammer
+  (2) BIT    Klammer sichtbar
+  (3) BIT[6] frei
+
+  BYTE   Ziffer
+end
+
+NOTENLINIEN (6 Bytes)
+  INT y
+  INT x0
+  INT x1
+end
+
+RECHTECK (10 Bytes)
+  INT x0
+  INT y0
+  INT x1
+  INT y1
+
+  +---+---+---+---+---+---+---+---+
+  |2              |1              |
+  +---+---+---+---+---+---+---+---+
+  (1) BIT[4] Linienstaerke
+  (2) BIT[4] Fuellung
+
+  BYTE   frei
+end
+
+TEXTOBJEKT
+  INT x
+  INT y
+
+  +---+---+---+---+---+---+---+---+
+  |4          |3  |2  |1          |
+  +---+---+---+---+---+---+---+---+
+  (1) BIT[3] Font_Index (0=Musik, 1=Standard, 2=individuell)
+  (2) BIT    In sich zentriert
+  (3) BIT    Auf Seite zentriert
+  (4) BIT[3] frei
+
+  if Font_Index = 2
+    FONT
+  endif
+  CHAR[] Text (bis zum begrenzenden ASCII-Null-Zeichen)
+end
+
+TRILLERSCHLANGE (7 Bytes)
+  INT    y
+  INT    x0
+  INT    x1
+
+  +---+---+---+---+---+---+---+---+
+  |2                          |1  |
+  +---+---+---+---+---+---+---+---+
+  (1) BIT    mit Tr.
+  (2) BIT[7] frei
+end
+
+VOLTENKLAMMER (7 Bytes)
+  INT y
+  INT x0
+  INT x1
+  +---+---+---+---+---+---+---+---+
+  |3          |2  |1              |
+  +---+---+---+---+---+---+---+---+
+  (1) BIT[4] Ziffer
+  (2) BIT    offen
+  (3) BIT[3] frei
+end
+
+
+7. Berechnung der chromatischen Tonhoehe in MIDI-Einheiten:
+----------------------------------------------------------
+
+Im Byte NOTE ist die relative diatonische Hoehe angegeben. 
+Die absolute chromatische Tonhoehe ist abhaengig vom aktuellen Schluessel 
+und der aktuellen Tonart und errechnet sich nach folgendem Schema
+(kein capella-Originalcode, capella ist in C++ geschrieben):
+
+function chromatischeTonhoehe (Schluessel_Form, Schluessel_Oktavierung, Tonart,
+                               relative_diatonische_Hoehe, Alteration: integer)
+                               : integer;
+(*
+  Die ersten drei Parameter ergeben sich aus dem aktuellen Zeilenzustand
+  (Zeilenattribut bzw. letzter Moduswechsel), 
+  die beiden letzten aus der Noteninfo (NOTE) 
+*)
+const Dur_Tonleiter: array[0..6] of integer = (0,2,4,5,7,9,11);
+var   d, Oktave, relDiatonic, relChromatic, relTonarthoehe: integer;
+begin
+  d := relative_diatonische_Hoehe + 42;
+  case Schluessel_Form of
+    1: d := d - 7;   (* C-Schluessel eine Oktave tiefer  *)
+    2: d := d - 14;  (* F-Schluessel zwei Oktaven tiefer *)
+  end;
+  case Schluessel_Oktavierung of
+    0: d := d + 7;
+    2: d := d - 7;
+  end;
+  Oktave := d div 7;  
+  relDiatonic := d mod 7;
+  relChromatic := 12 * Oktave + Dur_Tonleiter[relDiatonic] + Alteration;
+  relTonarthoehe := ((Tonart-7) * 7 + 60) mod 12; (* Quintenzirkel *)
+  chromatischeTonhoehe := relChromatic + relTonarthoehe;
+end;
+
+
+8. Beispieldatei
+----------------
+
+Die im folgenden aufgeschluesselte Datei besteht aus einer Tonleiter: c d e f g a h c'.
+
+Adr.| Daten                                  | Kommentar
+----+----------------------------------------+--------
+    |                                        |
+
+ === Anfang SCORE ======================
+ 00: 8AE2 B374                               Dateikennung (2.2 ohne Taktnumerierung)
+               0367 0004 0100 0900 0000 0000 PRINTSETTINGS
+ 10: 0000 0100 0100 2C01 0100 0100 2C01 0200 
+ 20: 1400 1400 1400 1400 
+                         F801                Druckgroesse
+                              00             Druckbilddarstellung
+                                01           Farbdarstellung
+                                   0000 0000 FONT
+ 30: 0000 0000 0000 9001 0000 0000 0000 0110 
+ 40: 5469 6D65 7320 4E65 7720 526F 6D61 6E00 
+ 50: 0000 0000 0000 0000 0000 0000 0000 0000 
+ 60: C0FF 0000 
+               0100                          Anfang fuer Seitenzaehlung
+                    0000                     Kopfzeile (Laenge = 0)
+                         0000                Fusszeile (Laenge = 0)
+ === Anfang LAYOUT: ====================
+                              04             topDist (Abstand vor 1. System)
+                                24           Ersatzzeichen fuer geschuetztes Leerzeichen ('$')
+                                   00        interDist (Abstand zwischen Systemen)
+                                     23      Ersatzzeichen fuer geschuetzten Bindestrich ('#')
+                                        03   beamMode (globale Balkensetzung)
+                                          07 FONT txtFont
+ 70: 00F2 FF00 0000 0000 0090 0100 0000 0000 
+ 80: 0001 1054 696D 6573 204E 6577 2052 6F6D 
+ 90: 616E 0000 0000 0000 0000 0000 0000 0000 
+ A0: 0000 00C0 FF00 00
+                      01                     txtAlign
+                         0000                allaBreve (nein)
+                              7800           tempo (120)
+                                   0100      nStaves (1 Notenzeilenvorlage)
+                                        8128 Klang fuer Kanal 1 bis 16 (im 1. Byte ist hoechstes Bit gesetzt!)
+ B0: 4944 3818 4734 7502 0304 0506 0708 
+                                        5050 Lautstaerke fuer Kanal 1 bis 16 (alle 80)
+ C0: 5050 5050 5050 5050 5050 5050 5050 
+ === Anfang STAFF_LAYOUT ===============
+                                        0400 Abstand nach oben
+ D0: 0400                                    Abstand nach unten
+          58                                 Schluessel
+            00 00                            fSingleLine
+                 00 00                       irrelevant
+                      00 00                  baseSound
+                           00 00             extSound
+                                00 00        transp
+                                     5F 5F5F brackets
+ E0: 0900 756E 6265 6E61 6E6E 7400           Beschreibung (9+1 Bytes: " unbenannt")
+                                   0000 00   Bezeichnung (0 Bytes)
+                                          00 Abkuerzung (0 Bytes)
+ F0: 0000 
+ --- Ende STAFF_LAYOUT -----------------
+ --- Ende LAYOUT -----------------------
+          0100                               nSystems (1)
+ === Anfang SYSTEM =====================
+               067F                          = 0111 1111 0000 0110 (Intel: 1. Byte niedrig!)
+               067F                          = 0000 0110 0111 1111
+                                                                 0 fJustification
+                                                                1  fShowMeter
+                                                               1   fFullName
+                                                         0000 0    n1 = 0
+                                               0000 0110           nIndent = 6
+                    0100                     = 0000 0000 0000 0001
+                                                      00 0000 0001 nStaves (1 Notenzeile)
+                                                     0             Taktnumerierung auf 1 zuruecksetzen (nein)
+                                                000 0              n2 = 0
+                                               0                   fFormFeed
+ === Anfang STAFF =======================
+                         0000                Liedtext_Laenge (0 = kein Liedtext)
+                              0100           fActiveVoice (aktive Stimme, nur bei zweistimmigen Notenzeilen relevant)
+                                   0000      Stimme (0 = Einzelzeile)
+                                        0000 zusaetzlicher Abstand nach oben
+100: 0000                                    zusaetzlicher Abstand nach unten
+          00                                 Layout-Zeilennummer (0 = 1. Stimme der Vorlage)
+            2C 00                            lg = 44
+                 10 0200 0099 1002 0000 9A10 45 Bytes Akkordinformationen (siehe Anhang)
+110: 0200 009B 1002 0000 9C10 0200 009D 1002 
+120: 0000 9E10 0200 009F 1002 0000 A000 3000 
+130: 00
+       09 00                                 n (Anzahl Akkorde+1) (8 Akkorde)
+            00 00                            Akkord 0 --> 0
+                 05 00                       Akkord 1 --> 5
+                      0A 00                  Akkord 2 --> 10
+                           0F 00             Akkord 3 --> 15
+                                14 00        Akkord 4 --> 20
+                                     19 00   Akkord 5 --> 25
+                                          1E Akkord 6 --> 30
+140: 00
+       23 00                                 Akkord 7 --> 35
+            28 00                            Akkord 8 --> 40 (Zeilenende)
+                 2C 00                       Akkord 9 --> 44 (zur Ermittlung der Länge von "Akkord 8")
+ --- Ende STAFF ------------------------
+ --- Ende SYSTEM -----------------------
+00 0000                                      nMetafiles (0)
+ --- Ende SCORE ------------------------
+
+
+Aufgliederung der 45 Bytes Akkordinformationen:
+===============================================
+Akkord 0 (5 Bytes): 10              00010000
+                                        0000  keine Extras etc.
+                                    0001      1 Note (untere 4 bit: keine Extras ...)
+                       02           00000010
+                                        0010  Notenwert 2 = 1/4
+                                    0000      keine Punktierung etc.
+                          00                  keine Balkentrennung etc.
+                             00               keine Artikulationsz. etc.
+                                99  10011001  1. Note
+                                      011001  rel. Höhe = 25 - 32 = -7
+                                    10        Alteration = 2 - 2 = 0 (keine)
+
+Akkord 1 (5 Bytes): 10 02 00 00 9A  dto., rel. Höhe = -6
+Akkord 2 (5 Bytes): 10 02 00 00 9B  dto., rel. Höhe = -5
+Akkord 3 (5 Bytes): 10 02 00 00 9C  dto., rel. Höhe = -4
+Akkord 4 (5 Bytes): 10 02 00 00 9D  dto., rel. Höhe = -3
+Akkord 5 (5 Bytes): 10 02 00 00 9E  dto., rel. Höhe = -2
+Akkord 6 (5 Bytes): 10 02 00 00 9F  dto., rel. Höhe = -1
+Akkord 7 (5 Bytes): 10 02 00 00 A0  dto., rel. Höhe = 0
+Akkord 8 (4 Bytes): 00 30 00 00     0 Noten, übrige Bytes irrelevant (Ende der Notenzeile)

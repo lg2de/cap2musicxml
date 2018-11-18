@@ -1,0 +1,24 @@
+# CSharp and Visual Basic code style settings:
+[*.cs]
+# Organize usings
+dotnet_sort_system_directives_first = true
+# use "this."
+dotnet_style_qualification_for_field = true:suggestion
+dotnet_style_qualification_for_property = true:suggestion
+dotnet_style_qualification_for_method = true:suggestion
+dotnet_style_qualification_for_event = true:suggestion
+# prefer "int"
+dotnet_style_predefined_type_for_locals_parameters_members = true:suggestion
+dotnet_style_predefined_type_for_member_access = true:suggestion
+# require accessibility modifiers
+dotnet_style_require_accessibility_modifiers = always:suggestion
+# prefer readonly
+dotnet_style_readonly_field = true:warning
+# ordering
+csharp_preferred_modifier_order = public,private,protected,internal,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,volatile,async:suggestion
+# expression bodies
+csharp_style_expression_bodied_methods = when_on_single_line:suggestion
+csharp_style_expression_bodied_operators = when_on_single_line:suggestion
+# bracing
+csharp_prefer_braces = true:suggestion
+csharp_new_line_before_open_brace = all
