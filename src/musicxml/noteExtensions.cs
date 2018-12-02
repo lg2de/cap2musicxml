@@ -18,22 +18,15 @@ namespace lg2de.cap2musicxml.musicxml
             this.ItemsElementName = ArrayExtensions.ArrayAppend(this.ItemsElementName, ItemsChoiceType1.duration);
         }
 
-        public lyric AddLyric(string text, ref bool isSyllabic)
+        public lyric AddLyric(string text, bool? isSyllabic)
         {
             var newLyric = new lyric();
             this.lyric = ArrayExtensions.ArrayAppend(this.lyric, newLyric);
 
             syllabic? syllabicValue = null;
-            if (text.EndsWith("-"))
+            if (isSyllabic.HasValue)
             {
-                syllabicValue = syllabic.begin;
-                text = text.Remove(text.Length - 1);
-                isSyllabic = true;
-            }
-            else if (!text.EndsWith("-") && isSyllabic)
-            {
-                syllabicValue = syllabic.end;
-                isSyllabic = false;
+                syllabicValue = isSyllabic.Value ? syllabic.begin : syllabic.end;
             }
 
             if (syllabicValue.HasValue)

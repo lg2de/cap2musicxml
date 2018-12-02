@@ -6,6 +6,7 @@ namespace lg2de.cap2musicxml.capella
 {
     using System;
     using System.Globalization;
+    using lg2de.cap2musicxml.Processing;
     using musicxml;
 
     /// <content>
@@ -18,9 +19,7 @@ namespace lg2de.cap2musicxml.capella
         {
             Console.WriteLine($"Processing staff {staffNumber}, measure {measureIndex}, voice {voiceNumber}");
 
-            // prepare lyric text
-            string[] lyricElemets = text.SplitForLyrics();
-            int currentLyricIndex = 0;
+            var lyricsProcessor = new LyricsProcessor(text);
 
             // iterate data
             int index = 0;
@@ -473,7 +472,6 @@ namespace lg2de.cap2musicxml.capella
                     currentMeasure.AddNote(newNote);
                 }
 
-                bool isSyllabic = false;
                 for (int i = 0; i < notes; i++)
                 {
                     // C2FORMAT.TXT line 334ff
@@ -554,15 +552,7 @@ namespace lg2de.cap2musicxml.capella
 
                     this.notesConnecting[staffNumber] = connectNext;
 
-                    if (lyricElemets.Length > currentLyricIndex)
-                    {
-                        string newText = lyricElemets[currentLyricIndex];
-                        newText = newText.Replace("$", string.Empty);
-                        newText = newText.Replace("#", "-");
-                        var lyric = newNote.AddLyric(newText, ref isSyllabic);
-
-                        currentLyricIndex++;
-                    }
+                    lyricsProcessor.AddLyrics(newNote);
 
                     currentMeasure.AddNote(newNote);
                 }
