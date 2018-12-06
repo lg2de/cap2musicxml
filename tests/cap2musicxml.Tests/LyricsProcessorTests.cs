@@ -2,7 +2,6 @@
 //     Copyright (c) Lukas Grützmacher. All rights reserved.
 // </copyright>
 
-using System.Linq;
 using FluentAssertions;
 using FluentAssertions.Execution;
 using lg2de.cap2musicxml.musicxml;
@@ -16,7 +15,7 @@ namespace lg2de.cap2musicxml.Tests
         [Theory]
         [InlineData("Ly-#-rics")]
         [InlineData("Ly # rics")]
-        public void AddLyrics_ManyNotesForSingleSyllabic_StartAndEndCorrect(string input)
+        public void AddLyrics_Syllabics_StartAndEndCorrect(string input)
         {
             var sut = new LyricsProcessor(input);
             note note1 = new note();
@@ -28,17 +27,67 @@ namespace lg2de.cap2musicxml.Tests
 
             using (new AssertionScope())
             {
-                note1.lyric.Should().HaveCount(1);
-                note1.lyric[0].Items.Should().BeEquivalentTo(
-                    syllabic.begin,
-                    new { Value = "Ly" });
+                note1.lyric.Should().BeEquivalentTo(
+                    new
+                    {
+                        number = "1",
+                        Items = new dynamic[] { syllabic.begin, new { Value = "Ly" } }
+                    });
 
                 note2.lyric.Should().BeNullOrEmpty();
 
-                note3.lyric.Should().HaveCount(1);
-                note3.lyric[0].Items.Should().BeEquivalentTo(
-                    syllabic.end,
-                    new { Value = "rics" });
+                note3.lyric.Should().BeEquivalentTo(
+                    new
+                    {
+                        number = "1",
+                        Items = new dynamic[] { syllabic.end, new { Value = "rics" } }
+                    });
+            }
+        }
+
+        [Fact]
+        public void AddLyrics_MultipleStaves_TextCorrectlyAssigned()
+        {
+            var sut = new LyricsProcessor("Ly-#-rics\r\nJust three words");
+            note note1 = new note();
+            note note2 = new note();
+            note note3 = new note();
+            sut.AddLyrics(note1);
+            sut.AddLyrics(note2);
+            sut.AddLyrics(note3);
+
+            using (new AssertionScope())
+            {
+                note1.lyric.Should().BeEquivalentTo(
+                    new
+                    {
+                        number = "1",
+                        Items = new dynamic[] { syllabic.begin, new { Value = "Ly" } }
+                    },
+                    new
+                    {
+                        number = "2",
+                        Items = new dynamic[] { new { Value = "Just" } }
+                    });
+
+                note2.lyric.Should().BeEquivalentTo(
+                    new
+                    {
+                        number = "2",
+                        Items = new dynamic[] { new { Value = "three" } }
+                    });
+
+                note3.lyric.Should().BeEquivalentTo(
+                    new
+                    {
+                        number = "1",
+                        Items = new dynamic[] { syllabic.end, new { Value = "rics" } }
+                    },
+                    new
+                    {
+                        number = "2",
+                        Items = new dynamic[] { new { Value = "words" } }
+                    });
             }
         }
     }

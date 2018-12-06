@@ -8,49 +8,55 @@ namespace lg2de.cap2musicxml.Processing
 
     internal class LyricsProcessor
     {
-        private readonly string[] textElements;
+        private readonly string[][] textElements;
 
         private uint currentIndex = 0;
-        private bool isSyllabic;
+        private bool[] isSyllabic;
 
         public LyricsProcessor(string text)
         {
             this.textElements = text.SplitForLyrics();
+            this.isSyllabic = new bool[this.textElements.Length];
         }
 
         public void AddLyrics(note note)
         {
-            if (this.currentIndex >= this.textElements.Length)
+            for (int stave = 0; stave < this.textElements.Length; stave++)
             {
-                // no (more) text available
-                return;
+                if (this.currentIndex >= this.textElements[stave].Length)
+                {
+                    // no (more) text available in stave
+                    continue;
+                }
+
+                string newText = this.textElements[stave][this.currentIndex];
+                var newSyllabic = newText.EndsWith("-");
+                if (this.currentIndex + 1 < this.textElements[stave].Length)
+                {
+                    var nextText = this.textElements[stave][this.currentIndex + 1];
+                    newSyllabic |= nextText.StartsWith("#");
+                }
+
+                if (newText.StartsWith("#") && this.isSyllabic[stave])
+                {
+                    // Syllabic is already "active"
+                    // Text is Capella syllabic sign which is not needed anymore.
+                    continue;
+                }
+
+                bool? syllabicState = null;
+                if (this.isSyllabic[stave] != newSyllabic)
+                {
+                    syllabicState = newSyllabic;
+                }
+
+                newText = newText.Replace("$", string.Empty).TrimEnd('-');
+                var lyric = note.AddLyric(newText, syllabicState);
+                lyric.number = (stave + 1).ToString();
+                this.isSyllabic[stave] = newSyllabic;
             }
 
-            string newText = this.textElements[this.currentIndex];
             this.currentIndex++;
-            var newSyllabic = newText.EndsWith("-");
-            if (this.currentIndex < this.textElements.Length)
-            {
-                var nextText = this.textElements[this.currentIndex];
-                newSyllabic |= nextText.StartsWith("#");
-            }
-
-            if (newText.StartsWith("#") && this.isSyllabic)
-            {
-                // Syllabic is already "active"
-                // Text is Capella syllabic sign which is not needed anymore.
-                return;
-            }
-
-            bool? syllabicState = null;
-            if (this.isSyllabic != newSyllabic)
-            {
-                syllabicState = newSyllabic;
-            }
-
-            newText = newText.Replace("$", string.Empty).TrimEnd('-');
-            var lyric = note.AddLyric(newText, syllabicState);
-            this.isSyllabic = newSyllabic;
         }
     }
 }

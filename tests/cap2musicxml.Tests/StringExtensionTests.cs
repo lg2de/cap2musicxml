@@ -13,15 +13,28 @@ namespace lg2de.cap2musicxml.Tests
         public void SplitForLyrics_Sample_SyllablesExtracted()
         {
             var sut = "My first score with syl-la-bles.";
-            sut.SplitForLyrics().Should().Equal(
-                "My", "first", "score", "with", "syl-", "la-", "bles.");
+            sut.SplitForLyrics().Should().BeEquivalentTo(
+                new[]
+                {
+                    new []
+                    {
+                        "My",
+                        "first",
+                        "score",
+                        "with",
+                        "syl-",
+                        "la-",
+                        "bles."
+                    }
+                });
         }
 
         [Fact]
         public void SplitForLyrics_LeadingVerseNumber_NumberCollected()
         {
             var sut = "1. Text";
-            sut.SplitForLyrics().Should().Equal("1. Text");
+            sut.SplitForLyrics().Should().BeEquivalentTo(
+                new[] { new[] { "1. Text" } });
         }
     }
 }
