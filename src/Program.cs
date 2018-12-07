@@ -18,7 +18,7 @@ namespace lg2de.cap2musicxml
             }
 
             string fileNameIn = args[0];
-            string fileNameOut = fileNameIn + ".xml";
+            string fileNameOut = fileNameIn + ".musicxml";
             if (args.Length >= 2)
             {
                 fileNameOut = args[1];
