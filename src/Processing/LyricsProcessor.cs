@@ -9,9 +9,9 @@ namespace lg2de.cap2musicxml.Processing
     internal class LyricsProcessor
     {
         private readonly string[][] textElements;
+        private readonly bool[] isSyllabic;
 
         private uint currentIndex = 0;
-        private bool[] isSyllabic;
 
         public LyricsProcessor(string text)
         {
@@ -44,14 +44,20 @@ namespace lg2de.cap2musicxml.Processing
                     continue;
                 }
 
-                bool? syllabicState = null;
+                syllabic? syllabicType = null;
                 if (this.isSyllabic[stave] != newSyllabic)
                 {
-                    syllabicState = newSyllabic;
+                    // type has changed
+                    syllabicType = newSyllabic ? syllabic.begin : syllabic.end;
+                }
+                else if (this.isSyllabic[stave])
+                {
+                    // syllabic still "active"
+                    syllabicType = syllabic.middle;
                 }
 
                 newText = newText.Replace("$", string.Empty).TrimEnd('-');
-                var lyric = note.AddLyric(newText, syllabicState);
+                var lyric = note.AddLyric(newText, syllabicType);
                 lyric.number = (stave + 1).ToString();
                 this.isSyllabic[stave] = newSyllabic;
             }
