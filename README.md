@@ -15,6 +15,8 @@ Running this command will try to load the score and try to save it as MusicXml i
 
 The software is build and tested currently only using Visual Studio 2017 (Community Edition).
 
+[![Build status](http://ci.appveyor.com/api/projects/status/github/lg2de/cap2musicxml?svg=true)](https://ci.appveyor.com/project/lg2de/cap2musicxml)
+
 # contribution
 
 You are welcome to create pull requests for bug fixes and other improvements.
