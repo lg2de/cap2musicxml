@@ -27,21 +27,25 @@ namespace lg2de.cap2musicxml.Tests
 
             using (new AssertionScope())
             {
-                note1.lyric.Should().BeEquivalentTo(
+                note1.lyric.Should().BeEquivalentTo(new[]
+                {
                     new
                     {
                         number = "1",
                         Items = new dynamic[] { syllabic.begin, new { Value = "Ly" } }
-                    });
+                    }
+                });
 
                 note2.lyric.Should().BeNullOrEmpty();
 
-                note3.lyric.Should().BeEquivalentTo(
+                note3.lyric.Should().BeEquivalentTo(new[]
+                {
                     new
                     {
                         number = "1",
                         Items = new dynamic[] { syllabic.end, new { Value = "rics" } }
-                    });
+                    }
+                });
             }
         }
 
@@ -59,26 +63,32 @@ namespace lg2de.cap2musicxml.Tests
 
             using (new AssertionScope())
             {
-                note1.lyric.Should().BeEquivalentTo(
+                note1.lyric.Should().BeEquivalentTo(new[]
+                {
                     new
                     {
                         number = "1",
                         Items = new dynamic[] { syllabic.begin, new { Value = "Mu" } }
-                    });
+                    }
+                });
 
-                note2.lyric.Should().BeEquivalentTo(
+                note2.lyric.Should().BeEquivalentTo(new[]
+                {
                     new
                     {
                         number = "1",
                         Items = new dynamic[] { syllabic.middle, new { Value = "sic" } }
-                    });
+                    }
+                });
 
-                note3.lyric.Should().BeEquivalentTo(
+                note3.lyric.Should().BeEquivalentTo(new[]
+                {
                     new
                     {
                         number = "1",
                         Items = new dynamic[] { syllabic.end, new { Value = "xml" } }
-                    });
+                    }
+                });
             }
         }
 
@@ -95,7 +105,8 @@ namespace lg2de.cap2musicxml.Tests
 
             using (new AssertionScope())
             {
-                note1.lyric.Should().BeEquivalentTo(
+                note1.lyric.Should().BeEquivalentTo(new[]
+                {
                     new
                     {
                         number = "1",
@@ -105,16 +116,20 @@ namespace lg2de.cap2musicxml.Tests
                     {
                         number = "2",
                         Items = new dynamic[] { new { Value = "Just" } }
-                    });
+                    }
+                });
 
-                note2.lyric.Should().BeEquivalentTo(
+                note2.lyric.Should().BeEquivalentTo(new[]
+                {
                     new
                     {
                         number = "2",
                         Items = new dynamic[] { new { Value = "three" } }
-                    });
+                    }
+                });
 
-                note3.lyric.Should().BeEquivalentTo(
+                note3.lyric.Should().BeEquivalentTo(new[]
+                {
                     new
                     {
                         number = "1",
@@ -124,7 +139,8 @@ namespace lg2de.cap2musicxml.Tests
                     {
                         number = "2",
                         Items = new dynamic[] { new { Value = "words" } }
-                    });
+                    }
+                });
             }
         }
     }
